@@ -1,42 +1,45 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
+  HttpException,
+  HttpCode,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { UsersService } from '../users/users.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UsersService,
+  ) {}
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
+  @Post('register')
+  @HttpCode(201)
+  async register(@Body() createUserDto: CreateUserDto) {
+    const user = await this.userService.createUser(createUserDto);
+    if (!user) {
+      throw new HttpException('User already exists', 400);
+    }
+    return { message: 'User created successfully' };
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @Post('login')
+  async login(@Body() createAuthDto: CreateAuthDto) {
+    const user = await this.userService.passwordVerify(createAuthDto);
+    if (!user) {
+      throw new HttpException('Invalid credentials', 401);
+    }
+    const tokens = await this.authService.generateToken(user);
+    return tokens;
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  @Post('refresh')
+  async refresh(@Body() { refreshToken }: { refreshToken: string }) {
+    const accessToken = await this.authService.refreshAccessToken(refreshToken);
+    return { accessToken, refreshToken };
   }
 }
