@@ -29,7 +29,18 @@ export class ChatRoomService {
 
   async findAll({ page, take }: { page: number; take: number }) {
     const skip = (page - 1) * take;
-    return this.chatroomRepository.findAndCount({ take, skip })
+    return this.chatroomRepository.findAndCount({ 
+      take, skip,
+      relations: ['members', 'owner'],
+      select: {
+        owner: {
+          id: true
+        },
+        members: {
+          id: true
+        }
+      }
+    })
     .then(([data, total]) => ({
       data,
       meta: {
@@ -47,8 +58,10 @@ export class ChatRoomService {
     if (!userInfo) {
       throw new BadRequestException('User not found');
     }
-    const chatRoom = await this.chatroomRepository.findOne({ where: { id: updateChatRoomDto.id },
-    relations: ['members'] });
+    const chatRoom = await this.chatroomRepository.findOne({ 
+      where: { id: updateChatRoomDto.id },
+      relations: ['members']
+    });
     if (!chatRoom) {
       throw new BadRequestException('Chat room not found');
     }
