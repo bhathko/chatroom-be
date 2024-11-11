@@ -11,10 +11,6 @@ import { CoreModule } from '../core/core.module';
 @Module({
   controllers: [AuthController],
   providers: [AuthService],
-  imports: [
-    CoreModule,
-    UsersModule,
-    TypeOrmModule.forFeature([Auth]),
-  ],
+  imports: [CoreModule, UsersModule, TypeOrmModule.forFeature([Auth])],
 })
 export class AuthModule {}

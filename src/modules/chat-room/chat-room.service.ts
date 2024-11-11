@@ -12,60 +12,66 @@ export class ChatRoomService {
     @InjectRepository(ChatRoom)
     private readonly chatroomRepository: Repository<ChatRoom>,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
   ) {}
   async create(createChatRoomDto: CreateChatRoomDto, user: { sub: string }) {
-    const userInfo = await this.userRepository.findOne({ where: { id: user.sub }});
+    const userInfo = await this.userRepository.findOne({
+      where: { id: user.sub },
+    });
     if (!userInfo) {
       throw new BadRequestException('User not found');
     }
     const chatRoom = this.chatroomRepository.create({
       ...createChatRoomDto,
       owner: userInfo,
-      members: [userInfo]
+      members: [userInfo],
     });
     return await this.chatroomRepository.save(chatRoom);
   }
 
   async findAll({ page, take }: { page: number; take: number }) {
     const skip = (page - 1) * take;
-    return this.chatroomRepository.findAndCount({ 
-      take, skip,
-      relations: ['members', 'owner'],
-      select: {
-        owner: {
-          id: true
+    return this.chatroomRepository
+      .findAndCount({
+        take,
+        skip,
+        relations: ['members', 'owner'],
+        select: {
+          owner: {
+            id: true,
+          },
+          members: {
+            id: true,
+          },
         },
-        members: {
-          id: true
-        }
-      }
-    })
-    .then(([data, total]) => ({
-      data,
-      meta: {
-        total,
-        page,
-      },
-    }))
-    .catch(error => {
-      throw new BadRequestException('Error fetching chat rooms');
-    });
+      })
+      .then(([data, total]) => ({
+        data,
+        meta: {
+          total,
+          page,
+        },
+      }))
+      .catch((error) => {
+        throw new BadRequestException('Error fetching chat rooms');
+      });
   }
 
   async update(updateChatRoomDto: UpdateChatRoomDto, user: { sub: string }) {
-    const userInfo = await this.userRepository.findOne({ where: { id: user.sub }});
+    const userInfo = await this.userRepository.findOne({
+      where: { id: user.sub },
+    });
     if (!userInfo) {
       throw new BadRequestException('User not found');
     }
-    const chatRoom = await this.chatroomRepository.findOne({ 
+    const chatRoom = await this.chatroomRepository.findOne({
       where: { id: updateChatRoomDto.id },
-      relations: ['members']
+      relations: ['members'],
     });
     if (!chatRoom) {
       throw new BadRequestException('Chat room not found');
     }
-    if (chatRoom.members.find(member => member.id === userInfo.id)) {
+    if (chatRoom.members.find((member) => member.id === userInfo.id)) {
       throw new BadRequestException('User already in chat room');
     }
     chatRoom.members.push(userInfo);

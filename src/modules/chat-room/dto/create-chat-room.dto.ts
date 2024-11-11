@@ -1,3 +1,3 @@
 export class CreateChatRoomDto {
-    name: string;
+  name: string;
 }

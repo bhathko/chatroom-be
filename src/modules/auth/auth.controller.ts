@@ -48,5 +48,4 @@ export class AuthController {
   async me() {
     return { message: 'You are authorized' };
   }
-
 }

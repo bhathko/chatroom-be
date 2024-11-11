@@ -16,6 +16,6 @@ export class Message {
   @ManyToOne(() => User, (user) => user.messages)
   user: User;
 
-  @ManyToOne(() => ChatRoom, (chatRoom) => chatRoom.id)
+  @ManyToOne(() => ChatRoom, (chatRoom) => chatRoom.messages)
   chatRoom: ChatRoom;
 }

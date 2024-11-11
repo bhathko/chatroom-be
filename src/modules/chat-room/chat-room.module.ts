@@ -9,9 +9,6 @@ import { CoreModule } from '../core/core.module';
 @Module({
   controllers: [ChatRoomController],
   providers: [ChatRoomService],
-  imports: [
-    CoreModule,
-    TypeOrmModule.forFeature([ChatRoom, User])
-  ]
+  imports: [CoreModule, TypeOrmModule.forFeature([ChatRoom, User])],
 })
 export class ChatRoomModule {}
