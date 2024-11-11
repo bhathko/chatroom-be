@@ -5,6 +5,7 @@ import { MessagesModule } from './modules/messages/messages.module';
 import { UsersModule } from './modules/users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatRoomModule } from './modules/chat-room/chat-room.module';
+import { CoreModule } from './modules/core/core.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -23,6 +24,7 @@ import { ChatRoomModule } from './modules/chat-room/chat-room.module';
     MessagesModule,
     UsersModule,
     ChatRoomModule,
+    CoreModule,
   ],
 })
 export class AppModule {}

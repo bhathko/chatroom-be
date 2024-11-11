@@ -1,26 +1,61 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
+import { ChatRoom } from './entities/chat-room.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class ChatRoomService {
-  create(createChatRoomDto: CreateChatRoomDto) {
-    return 'This action adds a new chatRoom';
+  constructor(
+    @InjectRepository(ChatRoom)
+    private readonly chatroomRepository: Repository<ChatRoom>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>
+  ) {}
+  async create(createChatRoomDto: CreateChatRoomDto, user: { sub: string }) {
+    const userInfo = await this.userRepository.findOne({ where: { id: user.sub }});
+    if (!userInfo) {
+      throw new BadRequestException('User not found');
+    }
+    const chatRoom = this.chatroomRepository.create({
+      ...createChatRoomDto,
+      owner: userInfo,
+      members: [userInfo]
+    });
+    return await this.chatroomRepository.save(chatRoom);
   }
 
-  findAll() {
-    return `This action returns all chatRoom`;
+  async findAll({ page, take }: { page: number; take: number }) {
+    const skip = (page - 1) * take;
+    return this.chatroomRepository.findAndCount({ take, skip })
+    .then(([data, total]) => ({
+      data,
+      meta: {
+        total,
+        page,
+      },
+    }))
+    .catch(error => {
+      throw new BadRequestException('Error fetching chat rooms');
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} chatRoom`;
-  }
-
-  update(id: number, updateChatRoomDto: UpdateChatRoomDto) {
-    return `This action updates a #${id} chatRoom`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} chatRoom`;
+  async update(updateChatRoomDto: UpdateChatRoomDto, user: { sub: string }) {
+    const userInfo = await this.userRepository.findOne({ where: { id: user.sub }});
+    if (!userInfo) {
+      throw new BadRequestException('User not found');
+    }
+    const chatRoom = await this.chatroomRepository.findOne({ where: { id: updateChatRoomDto.id },
+    relations: ['members'] });
+    if (!chatRoom) {
+      throw new BadRequestException('Chat room not found');
+    }
+    if (chatRoom.members.find(member => member.id === userInfo.id)) {
+      throw new BadRequestException('User already in chat room');
+    }
+    chatRoom.members.push(userInfo);
+    return await this.chatroomRepository.save(chatRoom);
   }
 }

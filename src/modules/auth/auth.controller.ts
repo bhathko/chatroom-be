@@ -4,6 +4,7 @@ import {
   Body,
   HttpException,
   HttpCode,
+  Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -42,4 +43,10 @@ export class AuthController {
     const accessToken = await this.authService.refreshAccessToken(refreshToken);
     return { accessToken, refreshToken };
   }
+
+  @Get('me')
+  async me() {
+    return { message: 'You are authorized' };
+  }
+
 }

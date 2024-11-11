@@ -1,45 +1,26 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards, Request, Patch } from '@nestjs/common';
 import { ChatRoomService } from './chat-room.service';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('chat-room')
+@UseGuards(JwtAuthGuard)
 export class ChatRoomController {
   constructor(private readonly chatRoomService: ChatRoomService) {}
 
+  @Get('list')
+  findAll(@Query('page') page: number = 1, @Query('limit') take: number = 10) {
+    return this.chatRoomService.findAll({ page, take });
+  }
+
   @Post()
-  create(@Body() createChatRoomDto: CreateChatRoomDto) {
-    return this.chatRoomService.create(createChatRoomDto);
+  create(@Body() createChatrRoomDto: CreateChatRoomDto, @Request() request) {
+    return this.chatRoomService.create(createChatrRoomDto, request.user);
   }
 
-  @Get()
-  findAll() {
-    return this.chatRoomService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.chatRoomService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateChatRoomDto: UpdateChatRoomDto,
-  ) {
-    return this.chatRoomService.update(+id, updateChatRoomDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.chatRoomService.remove(+id);
+  @Patch()
+  update(@Body() joinChatRoomDto: UpdateChatRoomDto, @Request() request) {
+    return this.chatRoomService.update(joinChatRoomDto, request.user);
   }
 }
