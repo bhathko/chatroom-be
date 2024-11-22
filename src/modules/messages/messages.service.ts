@@ -64,7 +64,7 @@ export class MessagesService {
         select: {
           user: {
             id: true,
-            username: true,
+            account: true,
           },
           chatRoom: {
             id: true,

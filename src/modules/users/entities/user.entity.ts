@@ -15,11 +15,20 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ unique: true })
+  email: string;
+
   @Column()
   password: string;
 
+  @Column()
+  displayName: string;
+
   @Column({ unique: true })
-  username: string;
+  account: string;
+
+  @Column()
+  birthday: Date;
 
   @OneToMany(() => ChatRoom, (chatRoom) => chatRoom.owner)
   ownedChatRooms: ChatRoom[];
