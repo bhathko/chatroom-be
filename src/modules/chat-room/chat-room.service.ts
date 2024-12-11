@@ -5,6 +5,7 @@ import { ChatRoom } from './entities/chat-room.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
+import { Message } from '../messages/entities/message.entity';
 
 @Injectable()
 export class ChatRoomService {
@@ -13,6 +14,8 @@ export class ChatRoomService {
     private readonly chatroomRepository: Repository<ChatRoom>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Message)
+    private readonly messageRepository: Repository<Message>
   ) {}
   async create(createChatRoomDto: CreateChatRoomDto, user: { sub: string }) {
     const userInfo = await this.userRepository.findOne({
@@ -76,5 +79,29 @@ export class ChatRoomService {
     }
     chatRoom.members.push(userInfo);
     return await this.chatroomRepository.save(chatRoom);
+  }
+
+  async findOne(id: string, user: { sub: string }) {
+    const userInfo = await this.userRepository.findOne({
+      where: { id: user.sub },
+    });
+    if (!userInfo) {
+      throw new BadRequestException('User not found');
+    }
+    const chatRoom = await this.chatroomRepository.findOne({
+      where: { id },
+      relations: ['members', 'owner'],
+    });
+
+    const messages = await this.messageRepository.find({
+      where: {
+        chatRoom: { id }
+      }
+    })
+
+    if (!chatRoom) {
+      throw new BadRequestException('Chat room not found');
+    }
+    return {...chatRoom, messages };
   }
 }

@@ -19,7 +19,7 @@ export class UsersService {
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     const existUser = await this.usersRepository.findOne({
-      where: { username: createUserDto.username },
+      where: { account: createUserDto.account },
     });
     if (existUser) {
       throw new ConflictException('User already exists');
@@ -37,7 +37,7 @@ export class UsersService {
 
   async passwordVerify(createAuthDto: CreateAuthDto) {
     const user = await this.usersRepository.findOne({
-      where: { username: createAuthDto.username },
+      where: { account: createAuthDto.account },
     });
     if (!user) {
       throw new UnauthorizedException('User or password is incorrect');

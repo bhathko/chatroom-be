@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Message } from '../../messages/entities/message.entity';
+import { ChatRoomUnread } from './chat-room-unread.entity';
 
 @Entity()
 export class ChatRoom {
@@ -24,5 +25,8 @@ export class ChatRoom {
   members: User[];
 
   @OneToMany(() => Message, (message) => message.chatRoom)
-  messages: Message[];
+  messages: Array<Message>;
+
+  @OneToMany(() => ChatRoomUnread, (chatRoomUnread) => chatRoomUnread.user)
+  chatRoomUnreads: Array<ChatRoomUnread>;
 }

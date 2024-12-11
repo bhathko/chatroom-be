@@ -7,6 +7,7 @@ import {
   UseGuards,
   Request,
   Patch,
+  Param,
 } from '@nestjs/common';
 import { ChatRoomService } from './chat-room.service';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
@@ -32,4 +33,10 @@ export class ChatRoomController {
   update(@Body() joinChatRoomDto: UpdateChatRoomDto, @Request() request) {
     return this.chatRoomService.update(joinChatRoomDto, request.user);
   }
+
+  @Get(':id')
+  findOne(@Request() request, @Param('id') id: string) {
+    return this.chatRoomService.findOne(id, request.user);
+  }
+
 }
